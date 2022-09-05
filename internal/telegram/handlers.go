@@ -27,9 +27,5 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) error {
 	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
 
 	_, err := b.bot.Send(msg)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

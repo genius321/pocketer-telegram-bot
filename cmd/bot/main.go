@@ -7,14 +7,14 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
+	"github.com/zhashkevych/go-pocket-sdk"
 )
 
 func main() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 
 	if err := godotenv.Load(); err != nil {
-		logrus.Println(err.Error())
-		return
+		logrus.Fatal(err)
 	}
 
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TOKEN"))
@@ -24,7 +24,12 @@ func main() {
 
 	bot.Debug = true
 
-	telegramBot := telegram.NewBot(bot)
+	pocketClient, err := pocket.NewClient(os.Getenv("CONSUMER_KEY"))
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	telegramBot := telegram.NewBot(bot, pocketClient)
 	if err := telegramBot.Start(); err != nil {
 		logrus.Fatal(err)
 	}
