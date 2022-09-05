@@ -28,23 +28,17 @@ func (b *Bot) Start() error {
 func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) error {
 	for update := range updates {
 		if update.Message != nil { // If we got a message
+			if update.Message.IsCommand() {
+				if err := b.handleCommand(update.Message); err != nil {
+					return err
+				}
+				continue
+			}
+
 			if err := b.handleMessage(update.Message); err != nil {
 				return err
 			}
 		}
-	}
-
-	return nil
-}
-
-func (b *Bot) handleMessage(message *tgbotapi.Message) error {
-	logrus.Printf("[%s] %s", message.From.UserName, message.Text)
-
-	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
-
-	_, err := b.bot.Send(msg)
-	if err != nil {
-		return err
 	}
 
 	return nil
