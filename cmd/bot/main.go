@@ -29,7 +29,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	telegramBot := telegram.NewBot(bot, pocketClient)
+	telegramBot := telegram.NewBot(bot, pocketClient, os.Getenv("REDIRECT_URL"))
 	if err := telegramBot.Start(); err != nil {
 		logrus.Fatal(err)
 	}
