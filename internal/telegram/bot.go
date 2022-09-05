@@ -16,23 +16,43 @@ func NewBot(bot *tgbotapi.BotAPI) *Bot {
 func (b *Bot) Start() error {
 	logrus.Printf("Authorized on account %s", b.bot.Self.UserName)
 
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	updates := b.initUpdatesChannel()
 
-	updates := b.bot.GetUpdatesChan(u)
+	if err := b.handleUpdates(updates); err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) error {
 	for update := range updates {
 		if update.Message != nil { // If we got a message
-			logrus.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-
-			_, err := b.bot.Send(msg)
-			if err != nil {
+			if err := b.handleMessage(update.Message); err != nil {
 				return err
 			}
 		}
 	}
 
 	return nil
+}
+
+func (b *Bot) handleMessage(message *tgbotapi.Message) error {
+	logrus.Printf("[%s] %s", message.From.UserName, message.Text)
+
+	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
+
+	_, err := b.bot.Send(msg)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b *Bot) initUpdatesChannel() tgbotapi.UpdatesChannel {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+
+	return b.bot.GetUpdatesChan(u)
 }
