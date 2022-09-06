@@ -1,19 +1,21 @@
 package telegram
 
 import (
+	"github.com/genius321/pocketer-telegram-bot/internal/repository"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 	"github.com/zhashkevych/go-pocket-sdk"
 )
 
 type Bot struct {
-	bot          *tgbotapi.BotAPI
-	pocketClient *pocket.Client
-	redirectURL  string
+	bot             *tgbotapi.BotAPI
+	pocketClient    *pocket.Client
+	redirectURL     string
+	tokenRepository repository.TokenRepository
 }
 
-func NewBot(bot *tgbotapi.BotAPI, pocketClient *pocket.Client, redirectURL string) *Bot {
-	return &Bot{bot: bot, pocketClient: pocketClient, redirectURL: redirectURL}
+func NewBot(bot *tgbotapi.BotAPI, pocketClient *pocket.Client, redirectURL string, tr repository.TokenRepository) *Bot {
+	return &Bot{bot: bot, pocketClient: pocketClient, redirectURL: redirectURL, tokenRepository: tr}
 }
 
 func (b *Bot) Start() error {

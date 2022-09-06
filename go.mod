@@ -3,6 +3,7 @@ module github.com/genius321/pocketer-telegram-bot
 go 1.19
 
 require (
+	github.com/boltdb/bolt v1.3.1
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.12.0
