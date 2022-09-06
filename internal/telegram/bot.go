@@ -35,13 +35,13 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) error {
 		if update.Message != nil { // If we got a message
 			if update.Message.IsCommand() {
 				if err := b.handleCommand(update.Message); err != nil {
-					return err
+					b.handleError(update.Message.Chat.ID, err)
 				}
 				continue
 			}
 
 			if err := b.handleMessage(update.Message); err != nil {
-				return err
+				b.handleError(update.Message.Chat.ID, err)
 			}
 		}
 	}

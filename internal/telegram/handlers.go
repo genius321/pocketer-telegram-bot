@@ -10,9 +10,8 @@ import (
 )
 
 const (
-	commandStart           = "start"
-	startMessage           = "Привет! Чтобы начать сохранять ссылки в своем Pocket аккаунте, для начала тебе необходимо дать мне на это доступ. Для этого переходи по ссылке:\n%s"
-	replyAlreadyAuthorized = "Ты уже авторизирован. Присылай ссылку, а я её сохраню."
+	commandStart = "start"
+	startMessage = "Привет! Чтобы начать сохранять ссылки в своем Pocket аккаунте, для начала тебе необходимо дать мне на это доступ. Для этого переходи по ссылке:\n%s"
 )
 
 func (b *Bot) handleCommand(message *tgbotapi.Message) error {
@@ -21,19 +20,16 @@ func (b *Bot) handleCommand(message *tgbotapi.Message) error {
 	case commandStart:
 		return b.handleStartCommand(message)
 	default:
-		return b.handleUnknownCommand(message)
+		return errUnknownCommand
 	}
 }
 
 func (b *Bot) handleMessage(message *tgbotapi.Message) error {
 	logrus.Printf("[%s] %s", message.From.UserName, message.Text)
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Ссылка успешно сохранена!")
 
 	_, err := url.ParseRequestURI(message.Text)
 	if err != nil {
-		msg.Text = "Это невалидная ссылка!"
-		_, err := b.bot.Send(msg)
-		return err
+		return errInvalidURL
 	}
 
 	accessToken, err := b.getAccessTokenIfAuthorized(message.Chat.ID)
@@ -45,11 +41,12 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) error {
 		AccessToken: accessToken,
 		URL:         message.Text,
 	}); err != nil {
-		msg.Text = "Не удалось сохранить ссылку. Попробуй ещё раз позже."
-		_, err := b.bot.Send(msg)
-		return err
+		if err.Error() != "failed to parse response body: invalid semicolon separator in query" {
+			return errUnableToSave
+		}
 	}
 
+	msg := tgbotapi.NewMessage(message.Chat.ID, "Ссылка успешно сохранена!")
 	_, err = b.bot.Send(msg)
 	return err
 }
@@ -59,17 +56,5 @@ func (b *Bot) handleStartCommand(message *tgbotapi.Message) error {
 	if err != nil {
 		return b.startAutorizationProcess(message.Chat.ID)
 	}
-
-	// user authorized already
-	msg := tgbotapi.NewMessage(message.Chat.ID, replyAlreadyAuthorized)
-
-	_, err = b.bot.Send(msg)
-	return err
-}
-
-func (b *Bot) handleUnknownCommand(message *tgbotapi.Message) error {
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Я не знаю такой команды :(")
-
-	_, err := b.bot.Send(msg)
-	return err
+	return errAlreadyAuthorized
 }
