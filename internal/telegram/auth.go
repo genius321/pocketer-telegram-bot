@@ -8,11 +8,11 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (b *Bot) getAccessToken(chatID int64) (string, error) {
+func (b *Bot) getAccessTokenFromDB(chatID int64) (string, error) {
 	return b.tokenRepository.Get(chatID, repository.AccessTokens)
 }
 
-func (b *Bot) getRequestToken(chatID int64) (string, error) {
+func (b *Bot) getRequestTokenFromDB(chatID int64) (string, error) {
 	return b.tokenRepository.Get(chatID, repository.RequestTokens)
 }
 

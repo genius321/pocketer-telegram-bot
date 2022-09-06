@@ -2,10 +2,11 @@ package telegram
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/genius321/pocketer-telegram-bot/internal/repository"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/sirupsen/logrus"
+	"github.com/zhashkevych/go-pocket-sdk"
 )
 
 const (
@@ -24,18 +25,56 @@ func (b *Bot) handleCommand(message *tgbotapi.Message) error {
 }
 
 func (b *Bot) handleMessage(message *tgbotapi.Message) error {
-	logrus.Printf("[%s] %s", message.From.UserName, message.Text)
+	// logrus.Printf("[%s] %s", message.From.UserName, message.Text)
+	msg := tgbotapi.NewMessage(message.Chat.ID, "Ссылка успешно сохранена!")
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
+	_, err := url.ParseRequestURI(message.Text)
+	if err != nil {
+		msg.Text = "Это невалидная ссылка!"
+		_, err := b.bot.Send(msg)
+		return err
+	}
 
-	_, err := b.bot.Send(msg)
+	accessToken, err := b.getAccessTokenFromDB(message.Chat.ID)
+	if err != nil {
+		requestToken, err := b.getRequestTokenFromDB(message.Chat.ID)
+		if err != nil {
+			msg.Text = "Ты не авторизирован! Используй команду /start"
+			_, err := b.bot.Send(msg)
+			return err
+		}
+
+		authResponse, err := b.pocketClient.Authorize(context.Background(), requestToken)
+		if err != nil {
+			msg.Text = "Ты не авторизирован! Используй команду /start"
+			_, err := b.bot.Send(msg)
+			return err
+		}
+
+		if err := b.tokenRepository.Save(message.Chat.ID, authResponse.AccessToken, repository.AccessTokens); err != nil {
+			msg.Text = "Ты не авторизирован! Используй команду /start"
+			_, err := b.bot.Send(msg)
+			return err
+		}
+	}
+
+	if err := b.pocketClient.Add(context.Background(), pocket.AddInput{
+		AccessToken: accessToken,
+		URL:         message.Text,
+	}); err != nil {
+		msg.Text = "Не удалось сохранить ссылку. Попробуй ещё раз позже."
+		_, err := b.bot.Send(msg)
+		return err
+	}
+
+	_, err = b.bot.Send(msg)
 	return err
 }
 
 func (b *Bot) handleStartCommand(message *tgbotapi.Message) error {
-	_, err := b.getAccessToken(message.Chat.ID)
+	_, err := b.getAccessTokenFromDB(message.Chat.ID)
 	if err != nil {
-		requestToken, err := b.getRequestToken(message.Chat.ID)
+		requestToken, err := b.getRequestTokenFromDB(message.Chat.ID)
 		if err != nil {
 			return b.startAutorizationProcess(message.Chat.ID)
 		}
