@@ -1,15 +1,17 @@
 package telegram
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/genius321/pocketer-telegram-bot/internal/repository"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	commandStart = "start"
-	startMessage = "Привет! Чтобы начать сохранять ссылки в своем Pocket аккаунте, для начала тебе необходимо дать мне на это доступ. Для этого переходи по ссылке:\n%s"
+	commandStart           = "start"
+	startMessage           = "Привет! Чтобы начать сохранять ссылки в своем Pocket аккаунте, для начала тебе необходимо дать мне на это доступ. Для этого переходи по ссылке:\n%s"
+	replyAlreadyAuthorized = "Ты уже авторизирован. Присылай ссылку, а я её сохраню."
 )
 
 func (b *Bot) handleCommand(message *tgbotapi.Message) error {
@@ -31,13 +33,25 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) error {
 }
 
 func (b *Bot) handleStartCommand(message *tgbotapi.Message) error {
-	authLink, err := b.generateAutorizationLink(message.Chat.ID)
+	_, err := b.getAccessToken(message.Chat.ID)
 	if err != nil {
-		return err
-	}
+		requestToken, err := b.getRequestToken(message.Chat.ID)
+		if err != nil {
+			return b.startAutorizationProcess(message.Chat.ID)
+		}
 
-	msg := tgbotapi.NewMessage(message.Chat.ID,
-		fmt.Sprintf(startMessage, authLink))
+		// get access token on pocket
+		authResponse, err := b.pocketClient.Authorize(context.Background(), requestToken)
+		if err != nil {
+			return b.startAutorizationProcess(message.Chat.ID)
+		}
+
+		if err := b.tokenRepository.Save(message.Chat.ID, authResponse.AccessToken, repository.AccessTokens); err != nil {
+			return b.startAutorizationProcess(message.Chat.ID)
+		}
+	}
+	// user authorized already
+	msg := tgbotapi.NewMessage(message.Chat.ID, replyAlreadyAuthorized)
 
 	_, err = b.bot.Send(msg)
 	return err

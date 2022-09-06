@@ -5,7 +5,29 @@ import (
 	"fmt"
 
 	"github.com/genius321/pocketer-telegram-bot/internal/repository"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
+
+func (b *Bot) getAccessToken(chatID int64) (string, error) {
+	return b.tokenRepository.Get(chatID, repository.AccessTokens)
+}
+
+func (b *Bot) getRequestToken(chatID int64) (string, error) {
+	return b.tokenRepository.Get(chatID, repository.RequestTokens)
+}
+
+func (b *Bot) startAutorizationProcess(chatID int64) error {
+	authLink, err := b.generateAutorizationLink(chatID)
+	if err != nil {
+		return err
+	}
+
+	msg := tgbotapi.NewMessage(chatID,
+		fmt.Sprintf(startMessage, authLink))
+
+	_, err = b.bot.Send(msg)
+	return err
+}
 
 func (b *Bot) generateAutorizationLink(chatID int64) (string, error) {
 	redirectURL := b.generateRedirectURL(chatID)
