@@ -1,5 +1,5 @@
 # pocketer-telegram-bot
-telegram client for [Pocket](https://getpocket.com) service
+Pocket is a Telegram bot that allows you to save links to the [Pocket](https://getpocket.com) service.
 ## Usage
 1. sign in [Pocket](https://getpocket.com)
 2. clone repository
