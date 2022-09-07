@@ -7,7 +7,6 @@ import (
 	"github.com/genius321/pocketer-telegram-bot/internal/repository/boltdb"
 	"github.com/genius321/pocketer-telegram-bot/internal/telegram"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"github.com/zhashkevych/go-pocket-sdk"
 )
@@ -16,10 +15,6 @@ const fsFileMode = 0600
 
 func main() {
 	logrus.SetFormatter(new(logrus.JSONFormatter))
-
-	if err := godotenv.Load(); err != nil {
-		logrus.Fatal(err)
-	}
 
 	cfg, err := config.Init()
 	if err != nil {
