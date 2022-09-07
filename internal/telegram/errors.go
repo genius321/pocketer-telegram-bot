@@ -14,17 +14,17 @@ var (
 )
 
 func (b *Bot) handleError(chatID int64, err error) {
-	msg := tgbotapi.NewMessage(chatID, "Произошла неизвестная ошибка")
+	msg := tgbotapi.NewMessage(chatID, b.messages.Default)
 
 	switch err {
 	case errInvalidURL:
-		msg.Text = "Это невалидная ссылка!"
+		msg.Text = b.messages.InvalidURL
 	case errUnableToSave:
-		msg.Text = "Увы, не удалось сохранить ссылку. Попробуй ещё раз позже."
+		msg.Text = b.messages.UnableToSave
 	case errAlreadyAuthorized:
-		msg.Text = "Ты уже авторизирован. Присылай ссылку, а я её сохраню."
+		msg.Text = b.messages.AlreadyAuthorized
 	case errUnknownCommand:
-		msg.Text = "Я не знаю такой команды :("
+		msg.Text = b.messages.UnknownCommand
 	}
 	b.bot.Send(msg)
 }

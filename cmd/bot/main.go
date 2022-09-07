@@ -38,22 +38,22 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	db, err := initDB()
+	db, err := initDB(cfg)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
 	tokenRepository := boltdb.NewTokenRepository(db)
 
-	telegramBot := telegram.NewBot(bot, pocketClient, cfg.RedirectURL, tokenRepository)
+	telegramBot := telegram.NewBot(bot, pocketClient, cfg.RedirectURL, tokenRepository, cfg.Messages)
 
 	if err := telegramBot.Start(); err != nil {
 		logrus.Fatal(err)
 	}
 }
 
-func initDB() (*bolt.DB, error) {
-	db, err := bolt.Open("bot.db", fsFileMode, nil)
+func initDB(cfg *config.Config) (*bolt.DB, error) {
+	db, err := bolt.Open(cfg.DBPath, fsFileMode, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,6 @@ import (
 
 const (
 	commandStart = "start"
-	startMessage = "Привет! Чтобы начать сохранять ссылки в своем Pocket аккаунте, для начала тебе необходимо дать мне на это доступ. Для этого переходи по ссылке:\n%s"
 )
 
 func (b *Bot) handleCommand(message *tgbotapi.Message) error {
@@ -46,7 +45,7 @@ func (b *Bot) handleMessage(message *tgbotapi.Message) error {
 		}
 	}
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Ссылка успешно сохранена!")
+	msg := tgbotapi.NewMessage(message.Chat.ID, b.messages.SavedSuccessfully)
 	_, err = b.bot.Send(msg)
 	return err
 }
