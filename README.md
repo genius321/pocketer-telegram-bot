@@ -1,14 +1,18 @@
 # pocketer-telegram-bot
-Pocket is a Telegram bot that allows you to save links to the [Pocket](https://getpocket.com) service.
-## Usage
-1. sign in [Pocket](https://getpocket.com)
-2. clone repository
-3. cd pocketer-telegram-bot
-4. get consumer_key [Pocket](https://getpocket.com/developer/apps)
-5. create bot: tg->botfather
-6. create .env with
-- TOKEN=your telegram bot token
-- CONSUMER_KEY=your pocket consumer key
-- REDIRECT_URL=your bot link
-7. install docker
-8. make all
+Телеграм бот, сохраняет отправленные ему ссылки на сайте [Pocket](https://getpocket.com)
+## Развёртывание бота
+1. Склонировать репозиторий
+2. Зайти в склоненный репозиторий
+3. Создать файл .env
+4. Написать в нём 3 строчки
+- REDIRECT_URL=ссылка на бот (http://t.me/botname)
+- TOKEN=ваш телеграм бот токен
+- CONSUMER_KEY=ваш покет consumer key
+5. Получить REDIRECT_URL + TOKEN: обращаемся к botfather в телеграме
+6. Получить CONSUMER_KEY: [Pocket](https://getpocket.com/developer/apps)
+7. Установить докер, если не установлен
+8. Выполнить команду make all
+## Как пользоваться
+1. Перед началом использования бота важно, чтобы был выполнен вход в покет [Pocket](https://getpocket.com)
+2. Нажать кнопку start в телеграме в диалоге с ботом
+3. Отправить ссылку, которую нужно сохранить
